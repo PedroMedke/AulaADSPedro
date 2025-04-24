@@ -1,0 +1,20 @@
+[
+    {
+      "client_id": "ID_CLIENTE_MARIA",
+      "number": "PROC-2023-001",
+      "value": 1500.00,
+      "status": "ativo",
+      "class": "Cobrança",
+      "description": "Processo de cobrança referente a fatura em aberto.",
+      "created_at": { "$date": "2023-10-26T10:00:00Z" }
+    },
+    {
+      "client_id": "ID_CLIENTE_EMPRESA",
+      "number": "PROC-2023-002",
+      "value": 5500.50,
+      "status": "em análise",
+      "class": "Contratual",
+      "description": "Análise de contrato de prestação de serviços.",
+      "created_at": { "$date": "2023-11-15T14:30:00Z" }
+    }
+  ]
