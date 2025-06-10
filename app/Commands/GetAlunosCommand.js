@@ -19,6 +19,10 @@ export default {
         const url = (process.env.IS_CONTAINER) ? ("http://web_host:80") : ("http://localhost:8080");
 
 
+
+        console.log('URL do servidor:', url);
+
+
         /**
          * URLSearchParams é usado para gerenciar o request body dados no formato x-www-form-urlencoded.
          */
