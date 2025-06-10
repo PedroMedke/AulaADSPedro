@@ -1,25 +1,10 @@
-import path from 'path';
 import db from '../config/db.js';
 import "../bootstrap/app.js";
-import { readdir } from 'fs/promises';
+import getFilesWithContents from './getFilesWithContents.js';
 
 export default async function createMigrationManager(dir) {
 
-    const files = await (async () => {
-        const files = await readdir(dir);
-        const result = [];
-
-        for (const file of files) {
-            if (!file.endsWith('.js')) continue;
-            const mod = await import(path.join(dir, file));
-            const data = mod.default;
-            result.push([file, data]);
-        }
-
-        result.sort((a, b) => a[0].localeCompare(b[0]));
-
-        return Object.fromEntries(result);
-    })();
+    const files = await getFilesWithContents(dir);
 
     async function getLastStep() {
         const res = await db.query('SELECT MAX(step) AS max FROM migrations');
@@ -52,9 +37,7 @@ export default async function createMigrationManager(dir) {
                 continue;
             }
 
-            const fileContent = await import(path.join(dir, file));
-
-            const migration = fileContent.default;
+            const migration = files[file];
 
             console.log(`Running ${file}...`);
             await migration.up();
@@ -85,9 +68,8 @@ export default async function createMigrationManager(dir) {
 
             console.log(`Rollback ${migration}...`);
 
-            const fileContent = await import(path.join(dir, migration));
+            const content = files[migration];
 
-            const content = fileContent.default;
             await content.down();
             await db.query('DELETE FROM migrations WHERE NAME = $1', [migration]);
         }

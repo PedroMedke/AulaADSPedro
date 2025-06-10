@@ -30,7 +30,7 @@ export default {
          * Primeira etapa é fazer o login com o endpoint /login para obter o token JWT.
          */
         try {
-            const response = await axios.post(`http://${url}/login`, data, {
+            const response = await axios.post(`${url}/login`, data, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }

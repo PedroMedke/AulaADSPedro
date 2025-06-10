@@ -3,24 +3,11 @@ import db from '../config/db.js';
 import "../bootstrap/app.js";
 import { readdir } from 'fs/promises';
 import { Sequelize } from 'sequelize';
+import getFilesWithContents from './getFilesWithContents.js';
 
 export default async function createSeedManager(dir) {
 
-    const files = await (async () => {
-        const files = await readdir(dir);
-        const result = [];
-
-        for (const file of files) {
-            if (!file.endsWith('.js')) continue;
-            const mod = await import(path.join(dir, file));
-            const data = mod.default;
-            result.push([file, data]);
-        }
-
-        result.sort((a, b) => a[0].localeCompare(b[0]));
-
-        return Object.fromEntries(result);
-    })();
+    const files = await getFilesWithContents(dir);
 
     async function getLastStep() {
         const res = await db.query('SELECT MAX(step) AS max FROM seeds');
@@ -53,9 +40,7 @@ export default async function createSeedManager(dir) {
                 continue;
             }
 
-            const fileContent = await import(path.join(dir, file));
-
-            const seed = fileContent.default;
+            const seed = files[file]
 
             console.log(`Running ${file}...`);
 
@@ -99,9 +84,7 @@ export default async function createSeedManager(dir) {
 
             console.log(`Rollback ${seed}...`);
 
-            const fileContent = await import(path.join(dir, seed));
-
-            const content = fileContent.default;
+            const content = files[seed];
             await content.down();
             await db.query('DELETE FROM seeds WHERE NAME = $1', [seed]);
         }

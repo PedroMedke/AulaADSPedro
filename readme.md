@@ -37,7 +37,13 @@ POSTGRES_PASSWORD=minha_senha
 JWT_SECRET=super_secreta
 ```
 
-5. Subir a aplicação com Docker Compose:
+5. Instalar as dependências:
+
+```sh
+npm install
+```
+
+6. Subir a aplicação com Docker Compose:
 
 
    ```sh
@@ -50,7 +56,7 @@ JWT_SECRET=super_secreta
    docker compose up --build
    ```
 
-6. Executar as migrations utilizando UM desses comandos:
+7. Executar as migrations utilizando UM desses comandos:
 
      > - Container:
     ```sh
@@ -69,7 +75,7 @@ JWT_SECRET=super_secreta
    ```
 
 
-7. Executar as seeds utilizando UM desses comandos:
+8. Executar as seeds utilizando UM desses comandos:
 
       > - Container:
     ```sh

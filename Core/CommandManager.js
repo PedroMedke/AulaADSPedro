@@ -5,25 +5,25 @@ import path from "path";
 import sequelize from "../config/sequelize.js";
 import chalk from "chalk";
 import CliTable3 from "cli-table3";
+import { pathToFileURL } from 'url';
+import getFilesWithContents from "./getFilesWithContents.js";
 
 
 export default async function createCommandManager(dir) {
 
-    const commands = await (async () => {
-        const files = await readdir(dir);
-        const result = [];
+    const filesCommand = await getFilesWithContents(dir);
 
-        for (const file of files) {
-            if (!file.endsWith('.js')) continue;
-            const mod = await import(path.join(dir, file));
-            const commandData = mod.default;
-            result.push([commandData.name || "default", commandData]);
-        }
+    const result = [];
 
-        result.sort((a, b) => a[0].localeCompare(b[0]));
+    for (const file in filesCommand) {
+        const commandData = filesCommand[file];
+        result.push([commandData.name || "default", commandData]);
+    }
 
-        return Object.fromEntries(result);
-    })();
+    result.sort((a, b) => a[0].localeCompare(b[0]));
+
+    const commands = Object.fromEntries(result);
+
 
     const [, , commandName, ...rawArgs] = process.argv;
     const args = minimist(rawArgs);
