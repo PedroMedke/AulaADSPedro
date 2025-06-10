@@ -51,7 +51,9 @@ services:
     depends_on:
       - node-web-aula-14-tf-container
     networks:
-      - project-aula-14-tf-network
+      project-aula-14-tf-network:
+        aliases:
+            - web_host
 
   #POSTGRES
   postgres-aula-14-tf-container:
