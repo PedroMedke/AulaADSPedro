@@ -27,7 +27,7 @@ export default {
         data.append('senha', '123456');
 
         /**
-         * Primeira etapa é fazer o login com o endpoint /login.
+         * Primeira etapa é fazer o login com o endpoint /login para obter o token JWT.
          */
         try {
             const response = await axios.post(`http://${url}/login`, data, {
