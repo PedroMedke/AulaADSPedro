@@ -1,69 +1,58 @@
-import axios from "axios";
-import CliTable3 from "cli-table3";
+// app/Commands/GetAlunosCommand.js
+const axios = require('axios');
+const Table = require('cli-table3');
 
-export default {
+// Função para buscar token de login
+async function login() {
+  try {
+    const response = await axios.post('http://localhost:3000/login', {
+      email: 'usuario@email.com', // Substitua com email da seed
+      senha: '123456'             // Substitua com senha da seed
+    });
 
-    name: 'get-alunos',
-    description: 'obter alunos',
-    arguments: {
-        seconds: "number",
-    },
-
-    handle: async function () {
-
-        /**
-         * No ./docker-compose.yml, nas linhas 55/56, dei o nome "web_host" para o host do container nginx.
-         * Se você rodar o cli fora da rede do docker, você pode usar "localhost:8080" para acessar o nginx.
-         * Caso contrário, voce deve chamar o nginx pelo nome do host do container na porta 80
-         */
-        const url = (process.env.IS_CONTAINER) ? ("http://web_host:80") : ("http://localhost:8080");
-
-
-
-        console.log('URL do servidor:', url);
-
-
-        /**
-         * URLSearchParams é usado para gerenciar o request body dados no formato x-www-form-urlencoded.
-         */
-        const data = new URLSearchParams();
-        data.append('email', 'user1@example.com');
-        data.append('senha', '123456');
-
-        /**
-         * Primeira etapa é fazer o login com o endpoint /login para obter o token JWT.
-         */
-        try {
-            const response = await axios.post(`${url}/login`, data, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-
-            const tokenData = response.data;
-
-            console.log('Token obtido:', tokenData.token);
-
-            /**
-             *  Aqui devemos usar um loop para fazer várias requisições paginadas para /api/alunos
-             */
-
-            let limit = 10;
-            let offset = 0;
-
-            const table = new CliTable3({
-                head: ['Nome', 'Materias'],
-                colWidths: [20, 20]
-            })
-
-            /** Codar Aqui */
-
-            console.log(table.toString());
-        } catch (error) {
-            console.error('Erro na requisição:', error.response?.data || error.message);
-            return;
-        }
-
-
-    }
+    return response.data.token;
+  } catch (error) {
+    console.error('Erro ao fazer login:', error.response?.data || error.message);
+    process.exit(1);
+  }
 }
+
+// Função principal do comando
+async function getAlunosCommand() {
+  const token = await login();
+
+  const table = new Table({
+    head: ['Nome do Aluno', 'Matérias'],
+    colWidths: [30, 50],
+    wordWrap: true
+  });
+
+  let nextUrl = 'http://localhost:3000/api/alunos'; // primeira chamada
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+
+  while (nextUrl) {
+    try {
+      const response = await axios.get(nextUrl, config);
+      const alunos = response.data.data;
+
+      alunos.forEach(aluno => {
+        const nome = aluno.nome;
+        const materias = aluno.materias.map(m => m.nome).join(',\n');
+        table.push([nome, materias]);
+      });
+
+      nextUrl = response.data.next;
+    } catch (error) {
+      console.error('Erro ao buscar alunos:', error.response?.data || error.message);
+      break;
+    }
+  }
+
+  console.log(table.toString());
+}
+
+getAlunosCommand();
